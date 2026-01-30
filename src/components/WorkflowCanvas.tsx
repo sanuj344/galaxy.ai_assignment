@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
     Background,
     Controls,
@@ -12,7 +12,8 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { Undo2, Redo2, Trash2 } from "lucide-react";
+import { Undo2, Redo2, Trash2, Play, Loader2 } from "lucide-react";
+import { executeWorkflow } from "@/lib/execution";
 
 // Import custom nodes
 import TextNode from "@/nodes/TextNode";
@@ -32,6 +33,8 @@ const nodeTypes = {
 };
 
 export default function WorkflowCanvas() {
+    const [isExecuting, setIsExecuting] = useState(false);
+
     const {
         nodes,
         edges,
@@ -140,6 +143,29 @@ export default function WorkflowCanvas() {
 
                 {/* Toolbar Panel */}
                 <Panel position="top-right" className="flex gap-2">
+                    <button
+                        onClick={async () => {
+                            setIsExecuting(true);
+                            try {
+                                const results = await executeWorkflow(nodes, edges);
+                                console.log("Execution results:", results);
+                            } catch (error) {
+                                console.error("Execution error:", error);
+                            } finally {
+                                setIsExecuting(false);
+                            }
+                        }}
+                        disabled={isExecuting || nodes.length === 0}
+                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Run Workflow"
+                    >
+                        {isExecuting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Play className="h-4 w-4" />
+                        )}
+                        {isExecuting ? "Running..." : "Run"}
+                    </button>
                     <button
                         onClick={undo}
                         disabled={!canUndo()}
