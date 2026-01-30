@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import ReactFlow, {
     Background,
     Controls,
@@ -13,6 +13,23 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { Undo2, Redo2, Trash2 } from "lucide-react";
+
+// Import custom nodes
+import TextNode from "@/nodes/TextNode";
+import UploadImageNode from "@/nodes/UploadImageNode";
+import UploadVideoNode from "@/nodes/UploadVideoNode";
+import LLMNode from "@/nodes/LLMNode";
+import CropImageNode from "@/nodes/CropImageNode";
+import ExtractFrameNode from "@/nodes/ExtractFrameNode";
+
+const nodeTypes = {
+    text: TextNode,
+    "upload-image": UploadImageNode,
+    "upload-video": UploadVideoNode,
+    llm: LLMNode,
+    "crop-image": CropImageNode,
+    "extract-frame": ExtractFrameNode,
+};
 
 export default function WorkflowCanvas() {
     const {
@@ -75,6 +92,7 @@ export default function WorkflowCanvas() {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                nodeTypes={nodeTypes}
                 fitView
                 snapToGrid
                 snapGrid={[15, 15]}
