@@ -38,7 +38,7 @@ git clone <repository-url>
 cd galaxy.ai_assignment
 
 # Install dependencies
-npm install
+npm install --legacy-peer-deps
 
 # Setup environment variables
 cp .env.example .env.local
