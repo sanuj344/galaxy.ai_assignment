@@ -1,19 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useWorkflowStore } from "@/store/workflowStore";
 import { ChevronLeft, ChevronRight, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+
+interface NodeRun {
+    nodeId: string;
+    nodeType: string;
+    status: "completed" | "failed" | "running";
+    duration: number;
+}
 
 interface WorkflowRun {
     id: string;
     status: "running" | "completed" | "failed";
-    startedAt: Date;
+    startedAt: string | Date;
     duration?: number;
-    nodeRuns: {
-        nodeId: string;
-        nodeType: string;
-        status: string;
-        duration?: number;
-    }[];
+    nodeRuns: NodeRun[];
 }
 
 export default function RightSidebar() {
@@ -21,7 +24,7 @@ export default function RightSidebar() {
     const [expandedRun, setExpandedRun] = useState<string | null>(null);
 
     // Mock data - will be replaced with real data later
-    const runs: WorkflowRun[] = [];
+    const runs = useWorkflowStore((state) => state.runs);
 
     const getStatusIcon = (status: string) => {
         switch (status) {

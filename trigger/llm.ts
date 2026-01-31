@@ -16,9 +16,17 @@ export const runLLMTask = task({
 
             // If image is provided, include it
             if (payload.imageUrl) {
-                // In production, fetch the image and convert to base64
-                // For now, we'll just use text
-                parts.push({ text: `[Image URL: ${payload.imageUrl}]` });
+                // Fetch the image and convert to base64 for Gemini API
+                const imageResp = await fetch(payload.imageUrl);
+                const buffer = await imageResp.arrayBuffer();
+                const base64Image = Buffer.from(buffer).toString("base64");
+
+                parts.push({
+                    inlineData: {
+                        data: base64Image,
+                        mimeType: "image/jpeg" // Defaulting to jpeg for simplicity
+                    }
+                });
             }
 
             const result = await model.generateContent({

@@ -1,14 +1,18 @@
+```typescript
 import { create } from "zustand";
 import { Node, Edge, applyNodeChanges, applyEdgeChanges, NodeChange, EdgeChange } from "reactflow";
 
 interface WorkflowState {
     nodes: Node[];
     edges: Edge[];
+    runs: any[]; // Persisted execution history
     history: { nodes: Node[]; edges: Edge[] }[];
     historyIndex: number;
 
     setNodes: (nodes: Node[]) => void;
     setEdges: (edges: Edge[]) => void;
+    setWorkflow: (nodes: Node[], edges: Edge[]) => void;
+    addRun: (run: any) => void;
     onNodesChange: (changes: NodeChange[]) => void;
     onEdgesChange: (changes: EdgeChange[]) => void;
     addNode: (node: Node) => void;
@@ -20,17 +24,25 @@ interface WorkflowState {
     canUndo: () => boolean;
     canRedo: () => boolean;
     saveToHistory: () => void;
+    loadSampleWorkflow: () => void;
 }
 
 export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     nodes: [],
     edges: [],
+    runs: [],
     history: [{ nodes: [], edges: [] }],
     historyIndex: 0,
 
     setNodes: (nodes) => set({ nodes }),
 
     setEdges: (edges) => set({ edges }),
+
+    setWorkflow: (nodes, edges) => {
+        set({ nodes, edges, history: [{ nodes, edges }], historyIndex: 0 });
+    },
+
+    addRun: (run) => set({ runs: [run, ...get().runs] }),
 
     onNodesChange: (changes) => {
         set({
@@ -119,8 +131,25 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     },
 
     canUndo: () => get().historyIndex > 0,
-
+  
     canRedo: () => get().historyIndex < get().history.length - 1,
+
+    loadSampleWorkflow: () => {
+        const sampleNodes: Node[] = [
+            { id: '1', type: 'upload-image', position: { x: 50, y: 50 }, data: { label: 'Upload Product Photo' } },
+            { id: '2', type: 'crop-image', position: { x: 400, y: 50 }, data: { label: 'Crop for Instagram', x: 0, y: 0, width: 1080, height: 1080 } },
+            { id: '3', type: 'llm', position: { x: 750, y: 150 }, data: { label: 'Generate Caption', systemPrompt: 'Write a catchy Instagram caption.', userMessage: 'Write a caption for this product photo.' } },
+            { id: '4', type: 'upload-video', position: { x: 50, y: 350 }, data: { label: 'Upload Product Demo' } },
+            { id: '5', type: 'extract-frame', position: { x: 400, y: 350 }, data: { label: 'Extract Key Frame', timestamp: 2.5, format: 'jpg' } },
+        ];
+        const sampleEdges: Edge[] = [
+            { id: 'e1-2', source: '1', target: '2', type: 'smoothstep', animated: true, style: { stroke: "#a855f7", strokeWidth: 2 } },
+            { id: 'e2-3', source: '2', target: '3', targetHandle: 'image', type: 'smoothstep', animated: true, style: { stroke: "#a855f7", strokeWidth: 2 } },
+            { id: 'e5-3', source: '5', target: '3', targetHandle: 'text', type: 'smoothstep', animated: true, style: { stroke: "#a855f7", strokeWidth: 2 } },
+            { id: 'e4-5', source: '4', target: '5', type: 'smoothstep', animated: true, style: { stroke: "#a855f7", strokeWidth: 2 } },
+        ];
+        get().setWorkflow(sampleNodes, sampleEdges);
+    }
 }));
 
 // DAG cycle detection using DFS

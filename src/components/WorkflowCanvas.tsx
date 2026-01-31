@@ -12,8 +12,9 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { Undo2, Redo2, Trash2, Play, Loader2 } from "lucide-react";
+import { Undo2, Redo2, Trash2, Play, Loader2, Download, Upload as UploadIcon, BookOpen } from "lucide-react";
 import { executeWorkflow } from "@/lib/execution";
+import { exportWorkflow, downloadWorkflow } from "@/lib/workflowIO";
 
 // Import custom nodes
 import TextNode from "@/nodes/TextNode";
@@ -148,7 +149,20 @@ export default function WorkflowCanvas() {
                             setIsExecuting(true);
                             try {
                                 const results = await executeWorkflow(nodes, edges);
-                                console.log("Execution results:", results);
+                                const totalDuration = results.reduce((acc, curr) => acc + curr.duration, 0);
+                                const run = {
+                                    id: `run-${Date.now()}`,
+                                    status: results.some(r => r.status === 'failed') ? 'failed' : 'completed',
+                                    startedAt: new Date().toISOString(),
+                                    duration: totalDuration,
+                                    nodeRuns: results.map(r => ({
+                                        nodeId: r.nodeId,
+                                        nodeType: nodes.find(n => n.id === r.nodeId)?.type || 'unknown',
+                                        status: r.status,
+                                        duration: r.duration
+                                    }))
+                                };
+                                useWorkflowStore.getState().addRun(run);
                             } catch (error) {
                                 console.error("Execution error:", error);
                             } finally {
@@ -166,6 +180,33 @@ export default function WorkflowCanvas() {
                         )}
                         {isExecuting ? "Running..." : "Run"}
                     </button>
+
+                    <div className="h-8 w-[1px] bg-slate-700 mx-1" />
+
+                    <button
+                        onClick={() => {
+                            useWorkflowStore.getState().loadSampleWorkflow();
+                        }}
+                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-slate-700"
+                        title="Load Sample Marketing Kit Workflow"
+                    >
+                        <BookOpen className="h-4 w-4" />
+                        Sample
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            const json = exportWorkflow(nodes, edges, "My Workflow");
+                            downloadWorkflow(json, "workflow-export");
+                        }}
+                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-slate-700"
+                        title="Export Workflow as JSON"
+                    >
+                        <Download className="h-4 w-4" />
+                        Export
+                    </button>
+
+                    <div className="h-8 w-[1px] bg-slate-700 mx-1" />
                     <button
                         onClick={undo}
                         disabled={!canUndo()}
