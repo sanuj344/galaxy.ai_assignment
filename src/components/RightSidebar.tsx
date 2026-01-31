@@ -115,18 +115,18 @@ export default function RightSidebar() {
                                 {expandedRun === run.id && (
                                     <div className="border-t border-slate-700 p-3">
                                         <div className="space-y-2">
-                                            {run.nodeRuns.map((nodeRun, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className="flex items-center justify-between rounded-lg bg-slate-900/50 p-2"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        {getStatusIcon(nodeRun.status)}
-                                                        <span className="text-xs text-slate-300">{nodeRun.nodeType}</span>
+                                            {run.nodeRuns.map((nodeRun: NodeRun, idx: number) => (
+                                                <div key={`${run.id}-${idx}`} className="flex items-center justify-between rounded bg-slate-700/50 p-2 text-xs">
+                                                    <div className="flex items-center gap-2 text-slate-300">
+                                                        <span className="font-medium text-slate-100 uppercase">{nodeRun.nodeType}</span>
+                                                        <span>({nodeRun.nodeId})</span>
                                                     </div>
-                                                    <span className="text-xs text-slate-500">
-                                                        {formatDuration(nodeRun.duration)}
-                                                    </span>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className={`rounded-full px-2 py-0.5 text-[10px] border ${getStatusBadge(nodeRun.status)}`}>
+                                                            {nodeRun.status}
+                                                        </span>
+                                                        <span className="text-slate-400">{(nodeRun.duration / 1000).toFixed(1)}s</span>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>

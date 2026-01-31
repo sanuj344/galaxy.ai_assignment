@@ -1,4 +1,3 @@
-```typescript
 import { create } from "zustand";
 import { Node, Edge, applyNodeChanges, applyEdgeChanges, NodeChange, EdgeChange } from "reactflow";
 
@@ -131,7 +130,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     },
 
     canUndo: () => get().historyIndex > 0,
-  
+
     canRedo: () => get().historyIndex < get().history.length - 1,
 
     loadSampleWorkflow: () => {

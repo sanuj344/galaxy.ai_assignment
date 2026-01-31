@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import ReactFlow, {
     Background,
     Controls,
@@ -9,12 +9,13 @@ import ReactFlow, {
     addEdge,
     BackgroundVariant,
     Panel,
+    Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { Undo2, Redo2, Trash2, Play, Loader2, Download, Upload as UploadIcon, BookOpen } from "lucide-react";
 import { executeWorkflow } from "@/lib/execution";
-import { exportWorkflow, downloadWorkflow } from "@/lib/workflowIO";
+import { exportWorkflow, downloadWorkflow, importWorkflow } from "@/lib/workflowIO";
 
 // Import custom nodes
 import TextNode from "@/nodes/TextNode";
@@ -35,6 +36,26 @@ const nodeTypes = {
 
 export default function WorkflowCanvas() {
     const [isExecuting, setIsExecuting] = useState(false);
+    const fileImportRef = useRef<HTMLInputElement>(null);
+
+    const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const json = event.target?.result as string;
+                const { nodes, edges } = importWorkflow(json);
+                useWorkflowStore.getState().setWorkflow(nodes, edges);
+            } catch (err) {
+                alert("Failed to import workflow: " + (err instanceof Error ? err.message : "Invalid file"));
+            }
+        };
+        reader.readAsText(file);
+        // Reset input
+        e.target.value = "";
+    };
 
     const {
         nodes,
@@ -79,8 +100,8 @@ export default function WorkflowCanvas() {
             }
             // Delete: Delete or Backspace
             if (e.key === "Delete" || e.key === "Backspace") {
-                const selectedNodes = nodes.filter((node) => node.selected);
-                selectedNodes.forEach((node) => deleteNode(node.id));
+                const selectedNodes = nodes.filter((node: Node) => node.selected);
+                selectedNodes.forEach((node: Node) => deleteNode(node.id));
             }
         };
 
@@ -205,6 +226,23 @@ export default function WorkflowCanvas() {
                         <Download className="h-4 w-4" />
                         Export
                     </button>
+
+                    <button
+                        onClick={() => fileImportRef.current?.click()}
+                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-slate-700"
+                        title="Import Workflow from JSON"
+                    >
+                        <UploadIcon className="h-4 w-4" />
+                        Import
+                    </button>
+
+                    <input
+                        type="file"
+                        ref={fileImportRef}
+                        onChange={handleImport}
+                        accept=".json"
+                        className="hidden"
+                    />
 
                     <div className="h-8 w-[1px] bg-slate-700 mx-1" />
                     <button
