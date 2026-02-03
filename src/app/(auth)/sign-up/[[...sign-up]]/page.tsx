@@ -9,7 +9,7 @@ export default function SignUpPage() {
                 appearance={{
                     baseTheme: undefined,
                     layout: {
-                        logoPlacement: "top",
+                        logoPlacement: "inside",
                         socialButtonsPlacement: "bottom",
                         socialButtonsVariant: "iconButton",
                     },
