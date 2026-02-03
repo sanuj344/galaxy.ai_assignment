@@ -25,7 +25,6 @@ export default function SignInPage() {
                         colorDanger: "#ef4444",
                         colorWarning: "#f59e0b",
                         colorNeutral: "#f3f4f6",
-                        fontSmoothing: "antialiased",
                         fontSize: "0.9375rem",
                         borderRadius: "0.375rem",
                     },
