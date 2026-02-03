@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Type, Image, Video, Sparkles, Crop, Film, ChevronLeft, ChevronRight } from "lucide-react";
+import { Type, Image, Video, Sparkles, Crop, Film, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useWorkflowStore } from "@/store/workflowStore";
 
 const nodeTypes = [
-    { type: "text", label: "Text", icon: Type, color: "from-blue-500 to-blue-600" },
-    { type: "upload-image", label: "Upload Image", icon: Image, color: "from-green-500 to-green-600" },
-    { type: "upload-video", label: "Upload Video", icon: Video, color: "from-amber-500 to-amber-600" },
-    { type: "llm", label: "LLM", icon: Sparkles, color: "from-purple-500 to-purple-600" },
-    { type: "crop-image", label: "Crop Image", icon: Crop, color: "from-pink-500 to-pink-600" },
-    { type: "extract-frame", label: "Extract Frame", icon: Film, color: "from-cyan-500 to-cyan-600" },
+    { type: "text", label: "Text", icon: Type },
+    { type: "upload-image", label: "Upload Image", icon: Image },
+    { type: "upload-video", label: "Upload Video", icon: Video },
+    { type: "llm", label: "LLM", icon: Sparkles },
+    { type: "crop-image", label: "Crop Image", icon: Crop },
+    { type: "extract-frame", label: "Extract Frame", icon: Film },
 ];
 
 export default function LeftSidebar() {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     const { addNode, nodes } = useWorkflowStore();
 
     const handleAddNode = (type: string, label: string) => {
@@ -30,49 +31,69 @@ export default function LeftSidebar() {
         addNode(newNode);
     };
 
+    const filteredNodeTypes = nodeTypes.filter(node =>
+        node.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div
-            className={`relative flex h-full flex-col border-r border-slate-800 bg-slate-900/50 backdrop-blur-sm transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"
-                }`}
+            className={`relative flex h-full flex-col border-r transition-all duration-200 ${
+                isCollapsed ? "w-14" : "w-56"
+            } border-white/10 bg-[#12141a]`}
         >
             {/* Header */}
-            <div className="flex h-16 items-center justify-between border-b border-slate-800 px-4">
-                {!isCollapsed && <h2 className="text-sm font-semibold text-white">Node Types</h2>}
+            <div className="flex h-11 items-center justify-between border-b border-white/10 px-3">
+                {!isCollapsed && (
+                    <h2 className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                        Nodes
+                    </h2>
+                )}
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
-                    title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    className="p-1 text-gray-400 hover:text-gray-200 transition-colors"
+                    title={isCollapsed ? "Expand" : "Collapse"}
                 >
-                    {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+                    {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                 </button>
             </div>
 
-            {/* Node Type Buttons */}
-            <div className="flex-1 overflow-y-auto p-4">
-                <div className="space-y-2">
-                    {nodeTypes.map(({ type, label, icon: Icon, color }) => (
+            {/* Search */}
+            {!isCollapsed && (
+                <div className="border-b border-white/10 px-3 py-2">
+                    <div className="relative">
+                        <Search className="absolute left-2 top-1.5 h-3.5 w-3.5 text-gray-500" />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full rounded-md border border-white/10 bg-[#0f1319] pl-7 pr-2 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-violet-400/30"
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Node List */}
+            <div className="flex-1 overflow-y-auto p-2">
+                <div className="space-y-1">
+                    {filteredNodeTypes.map(({ type, label, icon: Icon }) => (
                         <button
                             key={type}
                             onClick={() => handleAddNode(type, label)}
-                            className={`group relative flex w-full items-center gap-3 rounded-lg border border-slate-700 bg-slate-800/50 p-3 text-left transition-all hover:scale-105 hover:border-slate-600 hover:bg-slate-800 ${isCollapsed ? "justify-center" : ""
-                                }`}
+                            className={`group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-white/5 ${
+                                isCollapsed ? "justify-center" : ""
+                            }`}
                             title={isCollapsed ? label : undefined}
                         >
-                            <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${color} shadow-lg`}>
-                                <Icon className="h-5 w-5 text-white" />
-                            </div>
+                            <Icon className="h-4 w-4 text-gray-400 flex-shrink-0" />
                             {!isCollapsed && (
-                                <div className="flex-1">
-                                    <div className="text-sm font-medium text-white">{label}</div>
-                                    <div className="text-xs text-slate-400">
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-gray-300 font-medium">
+                                        {label}
+                                    </div>
+                                    <div className="text-gray-500 text-[10px]">
                                         {nodes.filter((n) => n.type === type).length} in canvas
                                     </div>
-                                </div>
-                            )}
-                            {/* Tooltip for collapsed state */}
-                            {isCollapsed && (
-                                <div className="pointer-events-none absolute left-full ml-2 hidden whitespace-nowrap rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white shadow-xl group-hover:block">
-                                    {label}
                                 </div>
                             )}
                         </button>
@@ -80,12 +101,12 @@ export default function LeftSidebar() {
                 </div>
             </div>
 
-            {/* Footer Info */}
+            {/* Footer */}
             {!isCollapsed && (
-                <div className="border-t border-slate-800 p-4">
-                    <div className="text-xs text-slate-400">
-                        <div className="mb-1 font-medium text-slate-300">Total Nodes</div>
-                        <div className="text-2xl font-bold text-white">{nodes.length}</div>
+                <div className="border-t border-white/10 px-3 py-2">
+                    <div className="text-[10px] text-gray-500">
+                        <div className="mb-1">Total nodes</div>
+                        <div className="text-lg font-semibold text-gray-200">{nodes.length}</div>
                     </div>
                 </div>
             )}

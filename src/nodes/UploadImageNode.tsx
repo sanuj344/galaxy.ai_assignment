@@ -1,6 +1,6 @@
 import { memo, useState, useRef } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
-import { Image, Upload, Loader2 } from "lucide-react";
+import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import { uploadToTransloadit, validateImageFile } from "@/lib/transloadit";
 
 export default memo(function UploadImageNode({ data, selected }: NodeProps) {
@@ -8,6 +8,9 @@ export default memo(function UploadImageNode({ data, selected }: NodeProps) {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const status = data?.status;
+    const isRunning = status === "running";
+    const isErrorState = status === "failed" || status === "error";
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -19,7 +22,6 @@ export default memo(function UploadImageNode({ data, selected }: NodeProps) {
             validateImageFile(file);
             const result = await uploadToTransloadit(file, "image");
             setPreview(result.url);
-            // Update node data
             data.imageUrl = result.url;
             data.fileName = result.name;
         } catch (err) {
@@ -31,60 +33,67 @@ export default memo(function UploadImageNode({ data, selected }: NodeProps) {
 
     return (
         <div
-            className={`min-w-[280px] rounded-lg border-2 bg-slate-800 shadow-xl transition-all ${selected ? "border-green-500 shadow-green-500/50" : "border-slate-700"
-                }`}
+            className={`min-w-[280px] rounded-md border bg-[#1a1f2b] transition-colors ${
+                selected ? "border-violet-400" : "border-white/10"
+            } ${isRunning ? "ring-1 ring-violet-400/30" : ""} ${isErrorState ? "border-red-400/60" : ""}`}
         >
             {/* Header */}
-            <div className="flex items-center gap-2 border-b border-slate-700 bg-gradient-to-r from-green-500 to-green-600 px-3 py-2">
-                <Image className="h-4 w-4 text-white" />
-                <span className="text-sm font-semibold text-white">Upload Image</span>
-                {uploading && <Loader2 className="ml-auto h-4 w-4 animate-spin text-white" />}
+            <div className="flex items-center gap-2 border-b border-white/10 bg-[#1a1f2b] px-3 py-2">
+                <ImageIcon className="h-4 w-4 text-gray-400" />
+                <span className="text-xs font-medium text-gray-200">Upload Image</span>
+                {uploading && <Loader2 className="ml-auto h-3 w-3 animate-spin text-violet-300" />}
             </div>
 
             {/* Content */}
-            <div className="p-3">
+            <div className="p-3 space-y-2">
                 {preview ? (
-                    <div className="relative">
-                        <img src={preview} alt="Preview" className="h-32 w-full rounded-md object-cover" />
+                    <div className="relative group">
+                        <img
+                            src={preview}
+                            alt="Preview"
+                            className="w-full h-auto rounded-md border border-white/10"
+                        />
                         <button
                             onClick={() => {
                                 setPreview(null);
-                                data.imageUrl = null;
+                                if (fileInputRef.current) fileInputRef.current.value = "";
                             }}
-                            className="absolute right-2 top-2 rounded-md bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-600"
+                            className="absolute top-1 right-1 rounded-md bg-gray-900/80 p-1 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100"
                         >
-                            Remove
+                            <X className="h-3 w-3" />
                         </button>
                     </div>
                 ) : (
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
-                        className="flex h-32 w-full flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-600 bg-slate-900 text-slate-400 transition-colors hover:border-green-500 hover:text-green-500 disabled:opacity-50"
-                    >
-                        {uploading ? (
-                            <Loader2 className="mb-2 h-8 w-8 animate-spin" />
-                        ) : (
-                            <Upload className="mb-2 h-8 w-8" />
-                        )}
-                        <span className="text-xs">{uploading ? "Uploading..." : "Click to upload"}</span>
-                    </button>
+                    <>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="nodrag hidden"
+                            id="upload-image-input"
+                        />
+                        <label
+                            htmlFor="upload-image-input"
+                            className="block cursor-pointer rounded-md border border-dashed border-white/20 bg-[#0f1319] py-3 text-center text-xs text-gray-400 transition-colors hover:border-violet-400/40 hover:bg-white/5"
+                        >
+                            {uploading ? "Uploading..." : "Click to upload"}
+                        </label>
+                    </>
                 )}
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                />
-                {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+                {error && (
+                    <p className="text-[10px] text-red-400">{error}</p>
+                )}
+                {data.fileName && (
+                    <p className="text-[10px] text-gray-500">{data.fileName}</p>
+                )}
             </div>
 
             {/* Output Handle */}
             <Handle
                 type="source"
                 position={Position.Right}
-                className="!h-3 !w-3 !border-2 !border-green-500 !bg-green-400"
+                className="!h-2 !w-2 !border !border-[#0b0f14] !bg-violet-400"
             />
         </div>
     );

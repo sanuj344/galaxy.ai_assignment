@@ -4,7 +4,7 @@ import RightSidebar from "@/components/RightSidebar";
 
 export default function DashboardPage() {
     return (
-        <div className="flex h-full">
+        <div className="flex h-full bg-[#0b0f14]">
             <LeftSidebar />
             <div className="flex-1">
                 <WorkflowCanvas />

@@ -13,7 +13,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { Undo2, Redo2, Trash2, Play, Loader2, Download, Upload as UploadIcon, BookOpen } from "lucide-react";
+import { Undo2, Redo2, Trash2, Play, Loader2, Download, Upload as UploadIcon, BookOpen, Zap } from "lucide-react";
 import { executeWorkflow } from "@/lib/execution";
 import { exportWorkflow, downloadWorkflow, importWorkflow } from "@/lib/workflowIO";
 
@@ -78,7 +78,7 @@ export default function WorkflowCanvas() {
                 target: connection.target!,
                 type: "smoothstep",
                 animated: true,
-                style: { stroke: "#a855f7", strokeWidth: 2 },
+                style: { stroke: "#8b8cfb", strokeWidth: 1.2 },
             };
             addEdgeToStore(edge);
         },
@@ -110,7 +110,7 @@ export default function WorkflowCanvas() {
     }, [undo, redo, nodes, deleteNode]);
 
     return (
-        <div className="h-full w-full">
+        <div className="h-full w-full relative">
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -124,47 +124,31 @@ export default function WorkflowCanvas() {
                 defaultEdgeOptions={{
                     type: "smoothstep",
                     animated: true,
-                    style: { stroke: "#a855f7", strokeWidth: 2 },
+                    style: { stroke: "#8b8cfb", strokeWidth: 1.2 },
                 }}
-                className="bg-slate-950"
+                className="bg-[#0b0f14]"
             >
                 <Background
                     variant={BackgroundVariant.Dots}
-                    gap={20}
+                    gap={18}
                     size={1}
-                    color="#475569"
-                    className="bg-slate-950"
+                    color="#1f2430"
+                    className="bg-[#0b0f14]"
                 />
 
                 <Controls
-                    className="rounded-lg border border-slate-700 bg-slate-800/90 backdrop-blur-sm [&>button]:border-slate-700 [&>button]:bg-slate-800 [&>button]:text-slate-300 [&>button:hover]:bg-slate-700"
+                    className="!rounded-md !border !border-white/10 !bg-[#12141a] [&>button]:!border-white/10 [&>button]:!bg-transparent [&>button]:!text-gray-200 [&>button]:!opacity-100 [&>button:hover]:!bg-white/5 [&>button:hover]:!text-white [&>button]:transition-colors"
                 />
 
                 <MiniMap
-                    className="rounded-lg border border-slate-700 bg-slate-800/90 backdrop-blur-sm"
-                    nodeColor={(node) => {
-                        switch (node.type) {
-                            case "text":
-                                return "#3b82f6";
-                            case "upload-image":
-                                return "#10b981";
-                            case "upload-video":
-                                return "#f59e0b";
-                            case "llm":
-                                return "#a855f7";
-                            case "crop-image":
-                                return "#ec4899";
-                            case "extract-frame":
-                                return "#06b6d4";
-                            default:
-                                return "#64748b";
-                        }
-                    }}
-                    maskColor="rgba(15, 23, 42, 0.8)"
+                    position="bottom-right"
+                    className="!rounded-md !border !border-white/10 !bg-[#12141a]"
+                    nodeColor="#e5e7eb"
+                    maskColor="rgba(11, 15, 20, 0.8)"
                 />
 
                 {/* Toolbar Panel */}
-                <Panel position="top-right" className="flex gap-2">
+                <Panel position="top-right" className="flex gap-1 flex-wrap max-w-2xl">
                     <button
                         onClick={async () => {
                             setIsExecuting(true);
@@ -191,27 +175,25 @@ export default function WorkflowCanvas() {
                             }
                         }}
                         disabled={isExecuting || nodes.length === 0}
-                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 rounded-md border border-violet-400/30 bg-violet-400/10 hover:bg-violet-400/20 disabled:bg-[#1a1f2b] disabled:text-gray-500 disabled:border-white/10 disabled:cursor-not-allowed px-3 py-1.5 text-xs font-medium text-violet-100 transition-colors"
                         title="Run Workflow"
                     >
                         {isExecuting ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         ) : (
-                            <Play className="h-4 w-4" />
+                            <Play className="h-3.5 w-3.5" />
                         )}
                         {isExecuting ? "Running..." : "Run"}
                     </button>
-
-                    <div className="h-8 w-[1px] bg-slate-700 mx-1" />
 
                     <button
                         onClick={() => {
                             useWorkflowStore.getState().loadSampleWorkflow();
                         }}
-                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-slate-700"
-                        title="Load Sample Marketing Kit Workflow"
+                        className="flex items-center gap-1.5 rounded-md border border-white/10 bg-[#12141a] hover:bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-200 transition-colors"
+                        title="Load Sample Workflow"
                     >
-                        <BookOpen className="h-4 w-4" />
+                        <BookOpen className="h-3.5 w-3.5" />
                         Sample
                     </button>
 
@@ -220,19 +202,19 @@ export default function WorkflowCanvas() {
                             const json = exportWorkflow(nodes, edges, "My Workflow");
                             downloadWorkflow(json, "workflow-export");
                         }}
-                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-slate-700"
-                        title="Export Workflow as JSON"
+                        className="flex items-center gap-1.5 rounded-md border border-white/10 bg-[#12141a] hover:bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-200 transition-colors"
+                        title="Export Workflow"
                     >
-                        <Download className="h-4 w-4" />
+                        <Download className="h-3.5 w-3.5" />
                         Export
                     </button>
 
                     <button
                         onClick={() => fileImportRef.current?.click()}
-                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-slate-700"
-                        title="Import Workflow from JSON"
+                        className="flex items-center gap-1.5 rounded-md border border-white/10 bg-[#12141a] hover:bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-200 transition-colors"
+                        title="Import Workflow"
                     >
-                        <UploadIcon className="h-4 w-4" />
+                        <UploadIcon className="h-3.5 w-3.5" />
                         Import
                     </button>
 
@@ -244,35 +226,38 @@ export default function WorkflowCanvas() {
                         className="hidden"
                     />
 
-                    <div className="h-8 w-[1px] bg-slate-700 mx-1" />
+                    <div className="w-px h-6 bg-white/10 mx-0.5" />
+                    
                     <button
                         onClick={undo}
                         disabled={!canUndo()}
-                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Undo (Ctrl+Z)"
+                        className="flex items-center gap-1.5 rounded-md border border-white/10 bg-[#12141a] hover:bg-white/5 disabled:bg-[#1a1f2b] disabled:text-gray-500 disabled:cursor-not-allowed px-3 py-1.5 text-xs font-medium text-gray-200 transition-colors"
+                        title="Undo"
                     >
-                        <Undo2 className="h-4 w-4" />
+                        <Undo2 className="h-3.5 w-3.5" />
                         Undo
                     </button>
+                    
                     <button
                         onClick={redo}
                         disabled={!canRedo()}
-                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Redo (Ctrl+Shift+Z)"
+                        className="flex items-center gap-1.5 rounded-md border border-white/10 bg-[#12141a] hover:bg-white/5 disabled:bg-[#1a1f2b] disabled:text-gray-500 disabled:cursor-not-allowed px-3 py-1.5 text-xs font-medium text-gray-200 transition-colors"
+                        title="Redo"
                     >
-                        <Redo2 className="h-4 w-4" />
+                        <Redo2 className="h-3.5 w-3.5" />
                         Redo
                     </button>
+                    
                     <button
                         onClick={() => {
                             const selectedNodes = nodes.filter((node) => node.selected);
                             selectedNodes.forEach((node) => deleteNode(node.id));
                         }}
                         disabled={!nodes.some((node) => node.selected)}
-                        className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-300 backdrop-blur-sm transition-colors hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Delete Selected (Delete)"
+                        className="flex items-center gap-1.5 rounded-md border border-red-400/30 bg-red-500/10 hover:bg-red-500/20 disabled:bg-[#1a1f2b] disabled:text-gray-500 disabled:border-white/10 disabled:cursor-not-allowed px-3 py-1.5 text-xs font-medium text-red-300 transition-colors"
+                        title="Delete Selected"
                     >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                         Delete
                     </button>
                 </Panel>
