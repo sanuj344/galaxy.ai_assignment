@@ -20,7 +20,7 @@ export default function SignInPage() {
                         colorBackground: "#ffffff",
                         colorInputBackground: "#ffffff",
                         colorInputText: "#111827",
-                        colorInputBorder: "#e5e7eb",
+                        colorBorder: "#e5e7eb",
                         colorSuccess: "#10b981",
                         colorDanger: "#ef4444",
                         colorWarning: "#f59e0b",
